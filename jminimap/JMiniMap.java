@@ -8,30 +8,39 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
 
     /** Variable Declaration **/
 
-    /** The Keyboard list **/
-    private ArrayList<Integer> keys = new ArrayList<Integer>();
-
-    /** The minimaps Housed Variable **/
+    /**
+     * The minimaps Housed Variable *
+     */
     private static final JMiniMap minimap = new JMiniMap();
 
-    /** The top color, and the bottom color **/
+    /**
+     * The top color, and the bottom color *
+     */
     private Color top;
     private Color bot;
 
-    /** The robot **/
+    /**
+     * The robot *
+     */
     private final RobotVector robot = new RobotVector();
 
-    /** The Graphics and Image Component **/
+    /**
+     * The Graphics and Image Component *
+     */
     private Graphics offg;
     private Image offscreen;
 
-    /** The Timer **/
+    /**
+     * The Timer *
+     */
     private Timer timer;
 
     public void init(double ratioToScreen, boolean flipped) {
-        /**
+        /** Arena:  54ft x 24ft 8in
+         *          16.46m x 7.5m
+         *          1646cm x 752cm
          * 1. Get the Dimensions of the screen
-         * 2. Create a ratio of the long wall to the short wall (24ft 8in. x 54ft)
+         * 2. Create a ratio of the long wall to the short wall
          * 3. Create the ySize by using the user given ratioToScreen
          * 4. Create the xSize using the ySize and the calculated ratio
          * 5. Edit the screen size and set the screen to be visible
@@ -70,29 +79,36 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
         return minimap;
     }
 
-    /** MiniMap declaration **/
+    /**
+     * MiniMap declaration *
+     */
     private JMiniMap() {
         setTitle("JMiniMap");
         setUndecorated(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setAlwaysOnTop(true);
     }
 
-    /** Main paint method **/
+    /**
+     * Main paint method *
+     */
     public void paint(Graphics g) {
         /** Color the Background **/
-        /** 1 **/ drawRectangle(Color.WHITE, 0, 0, getWidth(), getHeight());
+        drawRectangle(Color.WHITE, 0, 0, getWidth(), getHeight());
+
+        /** Draw the top side color and the bottom side color, decided in the program parameters **/
         drawRectangle(top, 0, 0, getWidth(), getHeight() / 3);
         drawRectangle(bot, 0, (getHeight() / 3) * 2, getWidth(), getHeight() / 3);
-        outlineRectangle(robot.areaColor, new BasicStroke(getHeight() / 150), 0, (int) (63 * robot.ratioHeight), getWidth(), (int) (27 * robot.ratioHeight));
-                                                                                                                    /** |---2---| **/
-        /** 2 **/ drawRectangle(Color.BLACK, 0, 0, getWidth(), getHeight() / 300);                                  /** |       | **/
-        /** 3 **/ drawRectangle(Color.BLACK, 0, getHeight() - getHeight() / 300, getWidth(), getHeight() / 300);    /** 4   1   5 **/
-        /** 4 **/ drawRectangle(Color.BLACK, 0, 0, getHeight() / 300, getHeight());                                 /** |       | **/
-        /** 5 **/ drawRectangle(Color.BLACK, getWidth() - getHeight() / 300, 0, getHeight() / 300, getHeight());    /** |---3---| **/
+
+        /** Draw the arena walls **/
+        drawRectangle(Color.BLACK, 0, 0, getWidth(), getHeight() / 300);
+        drawRectangle(Color.BLACK, 0, getHeight() - getHeight() / 300, getWidth(), getHeight() / 300);
+        drawRectangle(Color.BLACK, 0, 0, getHeight() / 300, getHeight());
+        drawRectangle(Color.BLACK, getWidth() - getHeight() / 300, 0, getHeight() / 300, getHeight());
 
         /** Draw the lines that separate each area **/
-        drawRectangle(Color.BLACK, 0, getHeight() / 3 - ((getHeight() / 300) / 2), getWidth(), getHeight() / 300);          /** 1/3 Separator **/
-        drawRectangle(Color.BLACK, 0, ((getHeight() / 3) * 2) - ((getHeight() / 300) / 2), getWidth(), getHeight() / 300);  /** 2/3 Separator **/
+        drawRectangle(Color.BLACK, 0, getHeight() / 3 - ((getHeight() / 300) / 2), getWidth(), getHeight() / 300);
+        drawRectangle(Color.BLACK, 0, ((getHeight() / 3) * 2) - ((getHeight() / 300) / 2), getWidth(), getHeight() / 300);
 
         /** Paint the robot **/
         offg.setColor(Color.BLACK);
@@ -110,29 +126,31 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
         repaint();
     }
 
+    /**
+     * Draw a rectangle using the graphics components *
+     */
     public void drawRectangle(Color color, int x, int y, int width, int height) {
         offg.setColor(color);
         offg.fillRect(x, y, width, height);
     }
 
-    public void outlineRectangle(Color color, Stroke stroke, int x, int y, int width, int height) {
-        Graphics2D g2 = (Graphics2D) offg;
-        g2.setStroke(stroke);
-        g2.setColor(color);
-        g2.drawRect(x, y, width, height);
-    }
-
-    /** Start the Loop **/
+    /**
+     * Start the Loop *
+     */
     public void start() {
         timer.start();
     }
 
-    /** Stop the Loop **/
+    /**
+     * Stop the Loop *
+     */
     public void stop() {
         timer.stop();
     }
 
-    /** Main Loop **/
+    /**
+     * Main Loop *
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         /**Check for key presses **/
@@ -145,77 +163,103 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
         repaint();
     }
 
-    /** Called whenever a key is "Typed" (Pushed down, than let up), not very reliable **/
+    /**
+     * Called whenever a key is "Typed" (Pushed down, than let up), not very reliable *
+     */
     @Override
     public void keyTyped(KeyEvent e) {
-
     }
 
-    /** Called whenever a key is "Pressed" (Pushed down), reliable **/
+    /**
+     * Called whenever a key is "Pressed" (Pushed down), reliable *
+     */
     @Override
     public void keyPressed(KeyEvent e) {
+    }
+
+    /**
+     * Called whenever a key is "Released" (Let up), reliable *
+     */
+    @Override
+    public void keyReleased(KeyEvent e) {
         if (keyWas(e, KeyEvent.VK_ESCAPE))
             System.exit(0);
     }
 
-    /** Called whenever a key is "Released" (Let up), reliable **/
-    @Override
-    public void keyReleased(KeyEvent e) {
-    }
-
-    /** Perform functions based on which keys are pressed **/
+    /**
+     * Perform functions based on which keys are pressed *
+     */
     public void checkKeys() {
     }
 
-    /** Checks if the given keycode is equal to the keycode to check **/
+    /**
+     * Checks if the given keycode is equal to the keycode to check *
+     */
     public boolean keyWas(KeyEvent e, int key) {
         return (e.getKeyCode() == key);
     }
 
-    /** Called whenever the mouse is "Clicked" (Pushed down, than let up), not very reliable **/
+    /**
+     * Called whenever the mouse is "Clicked" (Pushed down, than let up), not very reliable *
+     */
     @Override
     public void mouseClicked(MouseEvent e) {
-
     }
 
-    /** Called whenever the mouse is "Pressed" (Pushed down), reliable **/
+    /**
+     * Called whenever the mouse is "Pressed" (Pushed down), reliable *
+     */
     @Override
     public void mousePressed(MouseEvent e) {
-
     }
 
-    /** Called whenever the mouse is "Released" (Let up), reliable **/
+    /**
+     * Called whenever the mouse is "Released" (Let up), reliable *
+     */
     @Override
     public void mouseReleased(MouseEvent e) {
-
     }
 
-    /** Called whenever the mouse enters the window **/
+    /**
+     * Called whenever the mouse enters the window *
+     */
     @Override
     public void mouseEntered(MouseEvent e) {
-
     }
 
-    /** Called whenever the mouse exits the window **/
+    /**
+     * Called whenever the mouse exits the window *
+     */
     @Override
     public void mouseExited(MouseEvent e) {
-
     }
 
-    /** The Robot Class **/
+    /**
+     * The Robot Class *
+     */
     public class RobotVector {
 
-        public double xPos, yPos, xSpeed, ySpeed, angle, thrust;
-        public Polygon shape, drawShape, arrow, drawArrow;
-        public double robotRatioWide = 54.0 / (32.0 / 12.0);
-        public double robotRatioLong = 54.0 / (23.0 / 12.0);
-        public double ratioHeight;
-        public double ratioWidth;
-        public int robotWideSize, robotLongSize;
-        public Color arcColor, areaColor;
+        /**
+         * Variables that hold the robots position *
+         */
+        public double xPos, yPos, angle;
 
+        /**
+         * Variables that hold the robots graphical shapes *
+         */
+        public Polygon shape, drawShape, arrow, drawArrow;
+
+        /**
+         * Various ratios that make sure the robot is the right size on the field *
+         */
+        public double robotRatioWide = 54.0 / (32.0 / 12.0), robotRatioLong = 54.0 / (23.0 / 12.0);
+        public double ratioWidth, ratioHeight;
+        public int robotWideSize, robotLongSize;
+
+        /**
+         * Initialize the Robot *
+         */
         public RobotVector() {
-            thrust = 0.1;
             shape = new Polygon();
             drawShape = new Polygon();
             arrow = new Polygon();
@@ -223,19 +267,21 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
         }
 
         public void init() {
-            ratioHeight = getHeight() / 486.0;
-            ratioWidth = getWidth() / 222.0;
+            /** Provide values to the variables **/
+            ratioHeight = getHeight() / 1646.0;
+            ratioWidth = getWidth() / 752.0;
             robotWideSize = (int) ((getHeight() / robotRatioWide) / 2);
             robotLongSize = (int) ((getHeight() / robotRatioLong) / 2);
-            /** Various Vertices of the Robot **/
-            /** 1 **/ shape.addPoint(-robotWideSize, robotLongSize);
-            /** 2 **/ shape.addPoint(robotWideSize, robotLongSize);
-            /** 3 **/ shape.addPoint(robotWideSize, -robotLongSize);                /** 1---------2 **/
-            /** 4 **/ shape.addPoint(-robotWideSize, -robotLongSize);               /** |         | **/
-            /** 1 **/ drawShape.addPoint(-robotWideSize, robotLongSize);            /** |         | **/
-            /** 2 **/ drawShape.addPoint(robotWideSize, robotLongSize);             /** 4---------3 **/
-            /** 3 **/ drawShape.addPoint(robotWideSize, -robotLongSize);
-            /** 4 **/ drawShape.addPoint(-robotWideSize, -robotLongSize);
+
+            /** Create the various shapes using verticies **/
+            shape.addPoint(-robotWideSize, robotLongSize);
+            shape.addPoint(robotWideSize, robotLongSize);
+            shape.addPoint(robotWideSize, -robotLongSize);
+            shape.addPoint(-robotWideSize, -robotLongSize);
+            drawShape.addPoint(-robotWideSize, robotLongSize);
+            drawShape.addPoint(robotWideSize, robotLongSize);
+            drawShape.addPoint(robotWideSize, -robotLongSize);
+            drawShape.addPoint(-robotWideSize, -robotLongSize);
             arrow.addPoint(-robotWideSize / 2, -robotLongSize - robotLongSize / 2);
             arrow.addPoint(0, -robotLongSize * 2);
             arrow.addPoint(robotWideSize / 2, -robotLongSize - robotLongSize / 2);
@@ -244,38 +290,34 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
             drawArrow.addPoint(robotWideSize / 2, -robotLongSize - robotLongSize / 2);
         }
 
-        /** Paint the Robot **/
+        /**
+         * Paint the Robot *
+         */
         public void paint(Graphics g) {
             Graphics2D g2 = (Graphics2D) g;
-            g2.setStroke(new BasicStroke(getHeight() / 100));
-            g2.setColor(arcColor);
-            g2.drawArc((int) xPos - robotWideSize * 2, (int) yPos - robotWideSize * 2, robotWideSize * 4, robotWideSize * 4, -((int) robot.angle - 30), 300);
-            g2.drawArc((int) xPos - robotWideSize * 2, (int) yPos - robotWideSize * 2, robotWideSize * 4, robotWideSize * 4, -((int) robot.angle + 10), 20);
-            g2.drawArc((int) (xPos - robotWideSize * 1.5), (int) (yPos - robotWideSize * 1.5), robotWideSize * 3, robotWideSize * 3, -((int) robot.angle + 10), 20);
-            g2.drawArc((int) (xPos - robotWideSize), (int) (yPos - robotWideSize), robotWideSize * 2, robotWideSize * 2, -((int) robot.angle + 10), 20);
             g2.setStroke(new BasicStroke(getHeight() / 300));
+
+            /** Draw the robot **/
             g2.setColor(Color.LIGHT_GRAY);
             g2.fillPolygon(drawShape);
             g2.setColor(Color.BLACK);
             g2.drawPolygon(drawShape);
+
+            /** Draw the Arrow **/
             g2.setColor(new Color(0, 155, 0));
             g2.fillPolygon(drawArrow);
             g2.setColor(Color.BLACK);
             g2.drawPolygon(drawArrow);
         }
 
+        /**
+         * Update the robots position on the minimap every tick *
+         */
         public void updatePosition() {
-            if (angle > 255 && angle < 285)
-                arcColor = new Color(0, 255, 0, 255);
-            else
-                arcColor = new Color(255, 255, 0, 255);
-            if (yPos - robotWideSize > 63 * ratioHeight && yPos + robotWideSize < 90 * ratioHeight)
-                areaColor = new Color(0, 255, 0, 255);
-            else
-                areaColor = new Color(255, 255, 0, 255);
-            double ratioHeight = getHeight() / 486.0;
-            double ratioWidth = getWidth() / 222.0;
-            setPos(TextHandler.getVal("x", xPos / ratioHeight), TextHandler.getVal("y", yPos / ratioWidth), TextHandler.getVal("r", angle));
+            /** Grab information from the text file and use it to update the robots position **/
+            setPos(TextHandler.getVal("x1"), TextHandler.getVal("x2"), TextHandler.getVal("y1"), TextHandler.getVal("y2"), TextHandler.getVal("y3"), TextHandler.getVal("r"));
+
+            /** Perform various mathematical calculations to draw the robot correctly each tick **/
             int x, y;
             for (int i = 0; i < shape.npoints; i++) {
                 x = (int) Math.round(shape.xpoints[i] * Math.cos(Math.toRadians(angle)) - shape.ypoints[i] * Math.sin(Math.toRadians(angle)));
@@ -289,57 +331,96 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
                 drawArrow.xpoints[i] = x;
                 drawArrow.ypoints[i] = y;
             }
+
+            /** Apply these calculations **/
             drawShape.invalidate();
             drawShape.translate((int) xPos, (int) yPos);
             drawArrow.invalidate();
             drawArrow.translate((int) xPos, (int) yPos);
         }
 
-        public void setPos(double x, double y, double r) {
-            /** Grid is equal to 486 x 222 **/
-            xPos = (x * ratioWidth);
-            yPos = (y * ratioHeight);
+        /**
+         * Set the position of the robot using information from the text file *
+         */
+        public void setPos(double x1, double x2, double y1, double y2, double y3, double r) {
             angle = r;
+            boolean readyForUSCalibration = false;
+
+            /** Check if the robots angle is 10 degrees off a perpendicular angle **/
+            for (int i = -10; i < 11; i++)
+                if (((r + i) / 90) % 1 == 0)
+                    readyForUSCalibration = true;
+
+            /** If so, calibrate the robots position using the Ultrasonic sensors **/
+            if (readyForUSCalibration) {
+            }
         }
     }
 
-    /** The Text Handler **/
+    /**
+     * The Text Handler *
+     */
     public static class TextHandler {
 
+        /**
+         * Holds the contents of the text file *
+         */
         public static ArrayList<String> stationOut = new ArrayList<String>();
 
+        /**
+         * Read information from the text file and update the array contents *
+         */
         public static void ReadFromStation() throws IOException {
+            /** Initialize the reader **/
             File f = new File("stationOut.txt");
             FileReader fr = new FileReader(f);
             BufferedReader br = new BufferedReader(fr);
 
             String s;
 
+            /**Clear the array contents **/
             stationOut.clear();
+
+            /** Read the contents of the text file **/
             while ((s = br.readLine()) != null)
                 stationOut.add(s);
 
+            /** Stop the connection **/
             br.close();
         }
 
+        /**
+         * Write information to the text file and update its contents *
+         */
         public static void WriteToStation() throws IOException {
+            /** Initialize the writer **/
             File f = new File("minimapOut.txt");
             FileWriter fs = new FileWriter(f);
             BufferedWriter out = new BufferedWriter(fs);
+
+            /** Stop the connection **/
             out.close();
         }
 
-        public static double getVal(String prefix, double defaultVal) {
-            double val = defaultVal;
+        /**
+         * Get a value from the array using a prefix *
+         */
+        public static double getVal(String prefix) {
+            double val = 0;
             try {
+                /** Read from the Station and update the array contents **/
                 ReadFromStation();
                 val = Double.parseDouble(getLine(stationOut, prefix));
             } catch (Exception e) {
-                System.err.println("ERROR: Read an empty line! Using previous value, " + prefix + " = " + val);
+                /** If the value is empty, error **/
+                System.err.println("ERROR: Read an empty line!");
             }
             return val;
         }
 
+        /**
+         * Get a line from the specified array *
+         */
         public static String getLine(ArrayList<String> textDoc, String prefix) {
             for (int i = 0; i < textDoc.size(); i++) {
                 if (textDoc.get(i).contains(prefix))

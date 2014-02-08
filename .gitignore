@@ -2,7 +2,3 @@
 META-INF/*
 out/production/*
 out/test/*
-out/TestController/*
-testController/*
-/TestController.jar
-/stationOut.txt
