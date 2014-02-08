@@ -7,8 +7,6 @@ Each of the files in this repository have a seperate function, which includes:
 <dl>
 <dt>JMiniMap.jar</dt>
 <dd>The central file that handles almost all of the Minimaps functions. This file handles the Graphical User Interface, Mathematics concerning targetting, and I/O with the Driver Station</dd>
-<dt>TestController.jar</dt>
-<dd>An Optional file for the system, that acts like the sensors on the robot, providing positional I/O data to JMiniMap.jar. This only simulates the robot and is not required to function</dd>
 <dt>RUN JMiniMap.bat</dt>
 <dd>A Batch file that provides the two parameters that JMiniMap.jar requires to function, the ratio to the screen, and the side that the team is on. This batch file allows the user to easily input these two parameters</dd>
 <dt>stationOut.txt</dt>
