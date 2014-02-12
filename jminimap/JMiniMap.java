@@ -235,6 +235,310 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
     }
 
     /**
+     * The Coordinate Handler *
+     */
+    public class CoordLocator {
+        /**
+         * This Class solves the following problem;
+         * <p/>
+         * A robot is within an Arena.
+         * The robot is at the location (x0,y0), and oriented at angle theta
+         * Because of symmetry, theta is assumed to be between 0 and 90 degrees
+         * <p/>
+         * Notations;
+         * <p/>
+         * 0 Degrees         = North
+         * 90 Degrees        = East
+         * 180 Degrees       = South
+         * 270 Degrees       = West
+         * <p/>
+         * yAxis             = North-South
+         * xAxis             = East-West
+         * <p/>
+         * North Border      = T (TOP)
+         * East Border       = R (RIGHT)
+         * South Border      = B (BOTTOM)
+         * West Border       = L (LEFT)
+         * <p/>
+         * Robot Alignment is denoted by 4 letters
+         * Thus, designation TRLL means;
+         * T is to the front,
+         * R is to the right,
+         * L is to the back,
+         * L is to the left.
+         * <p/>
+         * The formula for each alignment is different
+         * Thus, by calculating sin ^ 2 + cos ^ 2, one can quickly see what alignment(s) are possible
+         * <p/>
+         * Variable a is used to denote the alternate (wall not seen)
+         */
+
+        public double[] distances, state;
+        public double tolerance = 1e-5;
+
+        public void locateRobot() {
+            double F, R, B, L;
+            double Fa, Ra, Ba, La;
+
+            double x0, y0, theta, c, s;
+
+            F = distances[0];
+            R = distances[1];
+            B = distances[2];
+            L = distances[3];
+
+            /** TRBL & RBLT Cases, AKA the simplest of cases **/
+            if ((F + B >= 2) && Math.abs(F + B - R - L) < tolerance) {
+                c = 2 / (F + B);
+                theta = Math.acos(c);
+                s = Math.sin(theta);
+                y0 = -(F - B) / (F + B);
+                x0 = -(R - L) / (R + L);
+                Fa = (1 - x0) / s;
+                Ra = (1 + y0) / s;
+                Ba = (1 + x0) / s;
+                La = (1 - y0) / s;
+                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
+                    state[0] = x0;
+                    state[1] = y0;
+                    state[2] = theta * 180.0 / Math.PI;
+                }
+
+                x0 = -(F - B) / (F + B);
+                y0 = (R - L) / (F + B);
+                s = 2 / (F + B);
+                theta = Math.asin(s);
+                c = Math.cos(theta);
+                Fa = (1 - y0) / c;
+                Ra = (1 - x0) / c;
+                Ba = (y0 + 1) / c;
+                La = (x0 + 1) / c;
+                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
+                    state[0] = x0;
+                    state[1] = y0;
+                    state[2] = theta * 180.0 / Math.PI;
+                }
+            }
+
+            /** RRBL Case **/
+            if (Math.abs((4 * (R * R + F * F)) / (F * F * (R + L)) - 1) < tolerance) {
+                c = 2 / (R + L);
+                theta = Math.acos(c);
+                x0 = -(R - L) / (R + L);
+                y0 = -(R + L - 2 * B) / (R + L);
+                s = (2 * R) / (F * R + F * L);
+                Fa = (1 - y0) / c;
+                Ra = (1 + y0) / s;
+                Ba = (1 + x0) / s;
+                La = (1 - y0) / s;
+                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
+                    state[0] = x0;
+                    state[1] = y0;
+                    state[2] = theta * 180.0 / Math.PI;
+                }
+            }
+
+            /** RRLT Case **/
+            if (Math.abs((4 * (R * R + F * F)) / ((F + B) * (F + B) * R * R) - 1) < tolerance) {
+                x0 = -(F - B) / (F + B);
+                s = 2 / (F + B);
+                c = (2 * F) / ((F + B) * R);
+                theta = Math.acos(c);
+                y0 = -(2 * L - F - B) / (F + B);
+                Fa = (1 - y0) / c;
+                Ra = (y0 + 1) / s;
+                Ba = (y0 + 1) / c;
+                La = (x0 + 1) / c;
+                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
+                    state[0] = x0;
+                    state[1] = y0;
+                    state[2] = theta * 180.0 / Math.PI;
+                }
+            }
+
+            /** RBBL Case **/
+            if (Math.abs((4 * (R * R + B * B)) / ((L * R + B * F) * (L * R + B * F)) - 1) < tolerance) {
+                x0 = (L * R - B * F) / (L * R + B * F);
+                s = (2 * B) / (L * R + B * F);
+                c = (2 * R) / (L * R + B * F);
+                theta = Math.acos(c);
+                y0 = -(L * R - 2 * B * R + B * F) / (L * R + B * F);
+                Fa = (1 - y0) / c;
+                Ra = (1 - x0) / c;
+                Ba = (x0 + 1) / s;
+                La = (1 - y0) / s;
+                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
+                    state[0] = x0;
+                    state[1] = y0;
+                    state[2] = theta * 180.0 / Math.PI;
+                }
+            }
+
+            /** TRLL Case **/
+            if (Math.abs((4 * (L * L + B * B)) / (B * B * (R + L) * (R + L)) - 1) < tolerance) {
+                y0 = (R + L - 2 * F) / (R + L);
+                c = 2 / (R + L);
+                theta = Math.acos(c);
+                s = (2 * L) / (B * (R + L));
+                x0 = -(R - L) / (R + L);
+                Fa = (1 - x0) / s;
+                Ra = (y0 + 1) / s;
+                Ba = (y0 + 1) / c;
+                La = (1 - y0) / s;
+                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
+                    state[0] = x0;
+                    state[1] = y0;
+                    state[2] = theta * 180.0 / Math.PI;
+                }
+            }
+
+            /** TBBL Case **/
+            if (Math.abs((4 * (R * R + B * B)) / ((F + B) * (F + B) * R * R) - 1) < tolerance) {
+                c = 2 / (F + B);
+                s = (2 * B) / ((F + B) * R);
+                y0 = -(F - B) / (F + B);
+                x0 = (2 * L - F - B) / (F + B);
+                Fa = (1 - x0) / s;
+                Ra = (1 - x0) / c;
+                Ba = (x0 + 1) / s;
+                La = (1 - y0) / s;
+                theta = Math.acos(c);
+                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
+                    state[0] = x0;
+                    state[1] = y0;
+                    state[2] = theta * 180.0 / Math.PI;
+                }
+            }
+
+            /** TBLT Case **/
+            if (Math.abs((4 * (L * L + F * F)) / (F * F * (R + L) * (R + L)) - 1) < tolerance) {
+                c = (2 * L) / (F * (R + L));
+                s = 2 / (R + L);
+                y0 = (R - L) / (R + L);
+                x0 = -(R + L - 2 * B) / (R + L);
+                theta = Math.acos(c);
+                Fa = (1 - x0) / s;
+                Ra = (1 - x0) / c;
+                Ba = (y0 + 1) / c;
+                La = (x0 + 1) / c;
+                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
+                    state[0] = x0;
+                    state[1] = y0;
+                    state[2] = theta * 180.0 / Math.PI;
+                }
+            }
+
+            /** RBLL Case **/
+            if (Math.abs((4 * (L * L + B * B)) / ((F + B) * (F + B) * L * L) - 1) < tolerance) {
+                s = 2 / (F + B);
+                y0 = (2 * R - F - B) / (F + B);
+                x0 = -(F - B) / (F + B);
+                c = (2 * B) / ((F + B) * L);
+                theta = Math.acos(c);
+                Fa = (1 - y0) / c;
+                Ra = (1 - x0) / c;
+                Ba = (y0 + 1) / c;
+                La = (1 - y0) / s;
+                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
+                    state[0] = x0;
+                    state[1] = y0;
+                    state[2] = theta * 180.0 / Math.PI;
+                }
+            }
+
+            /** RRBT Case **/
+            if (Math.abs((4 * (R * R + F * F)) / ((L * R + B * F) * (L * R + B * F)) - 1) < tolerance) {
+                s = (2 * R) / (L * R + B * F);
+                c = (2 * F) / (L * R + B * F);
+                x0 = (L * R - 2 * F * R + B * F) / (L * R + B * F);
+                y0 = -(L * R - B * F) / (L * R + B * F);
+                theta = Math.acos(c);
+                Fa = (1 - y0) / c;
+                Ra = (y0 + 1) / s;
+                Ba = (x0 + 1) / s;
+                La = (x0 + 1) / c;
+                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
+                    state[0] = x0;
+                    state[1] = y0;
+                    state[2] = theta * 180.0 / Math.PI;
+                }
+            }
+
+            /** TRBT Case **/
+            if (Math.abs((4 * (L * L + F * F)) / ((F + B) * (F + B) * L * L) - 1) < tolerance) {
+                c = 2 / (F + B);
+                x0 = -(2 * R - F - B) / (F + B);
+                y0 = -(F - B) / (F + B);
+                s = (2 * F) / ((F + B) * L);
+                Fa = (1 - x0) / s;
+                Ra = (y0 + 1) / s;
+                Ba = (x0 + 1) / s;
+                La = (x0 + 1) / c;
+                theta = Math.acos(c);
+                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
+                    state[0] = x0;
+                    state[1] = y0;
+                    state[2] = theta * 180.0 / Math.PI;
+                }
+            }
+
+            /** RBBT Case **/
+            if (Math.abs((4 * (R * R + B * B)) / (B * B * (R + L) * (R + L)) - 1) < tolerance) {
+                s = 2 / (R + L);
+                y0 = (R - L) / (R + L);
+                x0 = (R + L - 2 * F) / (R + L);
+                c = (2 * R) / (B * (R + L));
+                Fa = (1 - y0) / c;
+                Ra = (1 - x0) / c;
+                Ba = (x0 + 1) / s;
+                La = (x0 + 1) / c;
+                theta = Math.acos(c);
+                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
+                    state[0] = x0;
+                    state[1] = y0;
+                    state[2] = theta * 180.0 / Math.PI;
+                }
+            }
+
+            /** TBLL Case **/
+            if (Math.abs((4 * (L * L + B * B)) / ((L * R + B * F) * (L * R + B * F)) - 1) < tolerance) {
+                c = (2 * B) / (L * R + B * F);
+                y0 = (L * R - B * F) / (L * R + B * F);
+                x0 = -(L * R - 2 * B * L + B * F) / (L * R + B * F);
+                s = (2 * L) / (L * R + B * F);
+                Fa = (1 - x0) / s;
+                Ra = (1 - x0) / c;
+                Ba = (y0 + 1) / c;
+                La = (1 - y0) / s;
+                theta = Math.acos(c);
+                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
+                    state[0] = x0;
+                    state[1] = y0;
+                    state[2] = theta * 180.0 / Math.PI;
+                }
+            }
+
+            /** TRLT Case **/
+            if (Math.abs((4 * (L * L + F * F)) / ((L * R + B * F) * (L * R + B * F)) - 1) < tolerance) {
+                c = (2 * L) / (L * R + B * F);
+                y0 = (L * R - 2 * F * L + B * F) / (L * R + B * F);
+                x0 = -(L * R - B * F) / (L * R + B * F);
+                s = (2 * F) / (L * R + B * F);
+                Fa = (1 - x0) / s;
+                Ra = (y0 + 1) / s;
+                Ba = (y0 + 1) / c;
+                La = (x0 + 1) / c;
+                theta = Math.acos(c);
+                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
+                    state[0] = x0;
+                    state[1] = y0;
+                    state[2] = theta * 180.0 / Math.PI;
+                }
+            }
+        }
+    }
+
+    /**
      * The Robot Class *
      */
     public class RobotVector {
