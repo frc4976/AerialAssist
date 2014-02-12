@@ -1,8 +1,11 @@
+import org.omg.CORBA.COMM_FAILURE;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class JMiniMap extends JFrame implements KeyListener, MouseListener, ActionListener {
 
@@ -23,6 +26,11 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
      * The robot *
      */
     private final RobotVector robot = new RobotVector();
+
+    /**
+     * The Locator *
+     */
+    private final CoordLocator locator = new CoordLocator();
 
     /**
      * The Graphics and Image Component *
@@ -73,6 +81,7 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
 
         /** Initialize the Robot **/
         robot.init();
+        locator.triptest();
     }
 
     public static JMiniMap getMiniMap() {
@@ -240,40 +249,32 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
     public class CoordLocator {
         /**
          * This Class solves the following problem;
-         * <p/>
          * A robot is within an Arena.
          * The robot is at the location (x0,y0), and oriented at angle theta
          * Because of symmetry, theta is assumed to be between 0 and 90 degrees
-         * <p/>
          * Notations;
-         * <p/>
          * 0 Degrees         = North
          * 90 Degrees        = East
          * 180 Degrees       = South
          * 270 Degrees       = West
-         * <p/>
          * yAxis             = North-South
          * xAxis             = East-West
-         * <p/>
          * North Border      = T (TOP)
          * East Border       = R (RIGHT)
          * South Border      = B (BOTTOM)
          * West Border       = L (LEFT)
-         * <p/>
          * Robot Alignment is denoted by 4 letters
          * Thus, designation TRLL means;
          * T is to the front,
          * R is to the right,
          * L is to the back,
          * L is to the left.
-         * <p/>
          * The formula for each alignment is different
          * Thus, by calculating sin ^ 2 + cos ^ 2, one can quickly see what alignment(s) are possible
-         * <p/>
          * Variable a is used to denote the alternate (wall not seen)
          */
 
-        public double[] distances, state;
+        public double[] distances, states, answers;
         public double tolerance = 1e-5;
 
         public void locateRobot() {
@@ -299,9 +300,10 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
                 Ba = (1 + x0) / s;
                 La = (1 - y0) / s;
                 if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    state[0] = x0;
-                    state[1] = y0;
-                    state[2] = theta * 180.0 / Math.PI;
+                    states[0] = x0;
+                    states[1] = y0;
+                    states[2] = theta * 180.0 / Math.PI;
+                    return;
                 }
 
                 x0 = -(F - B) / (F + B);
@@ -314,9 +316,10 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
                 Ba = (y0 + 1) / c;
                 La = (x0 + 1) / c;
                 if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    state[0] = x0;
-                    state[1] = y0;
-                    state[2] = theta * 180.0 / Math.PI;
+                    states[0] = x0;
+                    states[1] = y0;
+                    states[2] = theta * 180.0 / Math.PI;
+                    return;
                 }
             }
 
@@ -332,9 +335,10 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
                 Ba = (1 + x0) / s;
                 La = (1 - y0) / s;
                 if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    state[0] = x0;
-                    state[1] = y0;
-                    state[2] = theta * 180.0 / Math.PI;
+                    states[0] = x0;
+                    states[1] = y0;
+                    states[2] = theta * 180.0 / Math.PI;
+                    return;
                 }
             }
 
@@ -350,9 +354,10 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
                 Ba = (y0 + 1) / c;
                 La = (x0 + 1) / c;
                 if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    state[0] = x0;
-                    state[1] = y0;
-                    state[2] = theta * 180.0 / Math.PI;
+                    states[0] = x0;
+                    states[1] = y0;
+                    states[2] = theta * 180.0 / Math.PI;
+                    return;
                 }
             }
 
@@ -368,9 +373,10 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
                 Ba = (x0 + 1) / s;
                 La = (1 - y0) / s;
                 if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    state[0] = x0;
-                    state[1] = y0;
-                    state[2] = theta * 180.0 / Math.PI;
+                    states[0] = x0;
+                    states[1] = y0;
+                    states[2] = theta * 180.0 / Math.PI;
+                    return;
                 }
             }
 
@@ -386,9 +392,10 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
                 Ba = (y0 + 1) / c;
                 La = (1 - y0) / s;
                 if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    state[0] = x0;
-                    state[1] = y0;
-                    state[2] = theta * 180.0 / Math.PI;
+                    states[0] = x0;
+                    states[1] = y0;
+                    states[2] = theta * 180.0 / Math.PI;
+                    return;
                 }
             }
 
@@ -404,9 +411,10 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
                 La = (1 - y0) / s;
                 theta = Math.acos(c);
                 if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    state[0] = x0;
-                    state[1] = y0;
-                    state[2] = theta * 180.0 / Math.PI;
+                    states[0] = x0;
+                    states[1] = y0;
+                    states[2] = theta * 180.0 / Math.PI;
+                    return;
                 }
             }
 
@@ -422,9 +430,9 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
                 Ba = (y0 + 1) / c;
                 La = (x0 + 1) / c;
                 if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    state[0] = x0;
-                    state[1] = y0;
-                    state[2] = theta * 180.0 / Math.PI;
+                    states[0] = x0;
+                    states[1] = y0;
+                    states[2] = theta * 180.0 / Math.PI;
                 }
             }
 
@@ -440,9 +448,10 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
                 Ba = (y0 + 1) / c;
                 La = (1 - y0) / s;
                 if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    state[0] = x0;
-                    state[1] = y0;
-                    state[2] = theta * 180.0 / Math.PI;
+                    states[0] = x0;
+                    states[1] = y0;
+                    states[2] = theta * 180.0 / Math.PI;
+                    return;
                 }
             }
 
@@ -458,9 +467,10 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
                 Ba = (x0 + 1) / s;
                 La = (x0 + 1) / c;
                 if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    state[0] = x0;
-                    state[1] = y0;
-                    state[2] = theta * 180.0 / Math.PI;
+                    states[0] = x0;
+                    states[1] = y0;
+                    states[2] = theta * 180.0 / Math.PI;
+                    return;
                 }
             }
 
@@ -476,9 +486,10 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
                 La = (x0 + 1) / c;
                 theta = Math.acos(c);
                 if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    state[0] = x0;
-                    state[1] = y0;
-                    state[2] = theta * 180.0 / Math.PI;
+                    states[0] = x0;
+                    states[1] = y0;
+                    states[2] = theta * 180.0 / Math.PI;
+                    return;
                 }
             }
 
@@ -494,9 +505,10 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
                 La = (x0 + 1) / c;
                 theta = Math.acos(c);
                 if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    state[0] = x0;
-                    state[1] = y0;
-                    state[2] = theta * 180.0 / Math.PI;
+                    states[0] = x0;
+                    states[1] = y0;
+                    states[2] = theta * 180.0 / Math.PI;
+                    return;
                 }
             }
 
@@ -512,9 +524,10 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
                 La = (1 - y0) / s;
                 theta = Math.acos(c);
                 if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    state[0] = x0;
-                    state[1] = y0;
-                    state[2] = theta * 180.0 / Math.PI;
+                    states[0] = x0;
+                    states[1] = y0;
+                    states[2] = theta * 180.0 / Math.PI;
+                    return;
                 }
             }
 
@@ -530,10 +543,47 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
                 La = (x0 + 1) / c;
                 theta = Math.acos(c);
                 if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    state[0] = x0;
-                    state[1] = y0;
-                    state[2] = theta * 180.0 / Math.PI;
+                    states[0] = x0;
+                    states[1] = y0;
+                    states[2] = theta * 180.0 / Math.PI;
+                    return;
                 }
+            }
+        }
+
+        public void triptest() {
+            distances = new double[4];
+            states = new double[3];
+            answers = new double[3];
+            try {
+                File f = new File("triptest.txt");
+                FileReader fr = new FileReader(f);
+                BufferedReader br = new BufferedReader(fr);
+
+                String s;
+                while ((s = br.readLine()) != null) {
+                    distances[0] = Double.parseDouble(s.split(" ")[0]);
+                    distances[1] = Double.parseDouble(s.split(" ")[1]);
+                    distances[2] = Double.parseDouble(s.split(" ")[2]);
+                    distances[3] = Double.parseDouble(s.split(" ")[3]);
+                    answers[0] = Double.parseDouble(s.split(" ")[4]);
+                    answers[1] = Double.parseDouble(s.split(" ")[5]);
+                    answers[2] = Double.parseDouble(s.split(" ")[6]);
+                    locateRobot();
+                    for (int i = 0; i < 3; ++i) {
+                        String prefix = "SUCCESS";
+                        if (i < 2)
+                            if (Math.abs(states[i] - answers[i]) > 0.01)
+                                prefix = "FAIL";
+                            else if (Math.abs(states[i] - answers[i]) > 1)
+                                prefix = "FAIL";
+                        System.out.println(prefix + ": calc: " + states[i] + " | answer: " + answers[i]);
+                    }
+                }
+
+                br.close();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
@@ -618,9 +668,6 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
          * Update the robots position on the minimap every tick *
          */
         public void updatePosition() {
-            /** Grab information from the text file and use it to update the robots position **/
-            setPos(TextHandler.getVal("x1"), TextHandler.getVal("x2"), TextHandler.getVal("y1"), TextHandler.getVal("y2"), TextHandler.getVal("y3"), TextHandler.getVal("r"));
-
             /** Perform various mathematical calculations to draw the robot correctly each tick **/
             int x, y;
             for (int i = 0; i < shape.npoints; i++) {
@@ -660,79 +707,4 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
             }
         }
     }
-
-    /**
-     * The Text Handler *
-     */
-    public static class TextHandler {
-
-        /**
-         * Holds the contents of the text file *
-         */
-        public static ArrayList<String> stationOut = new ArrayList<String>();
-
-        /**
-         * Read information from the text file and update the array contents *
-         */
-        public static void ReadFromStation() throws IOException {
-            /** Initialize the reader **/
-            File f = new File("stationOut.txt");
-            FileReader fr = new FileReader(f);
-            BufferedReader br = new BufferedReader(fr);
-
-            String s;
-
-            /**Clear the array contents **/
-            stationOut.clear();
-
-            /** Read the contents of the text file **/
-            while ((s = br.readLine()) != null)
-                stationOut.add(s);
-
-            /** Stop the connection **/
-            br.close();
-        }
-
-        /**
-         * Write information to the text file and update its contents *
-         */
-        public static void WriteToStation() throws IOException {
-            /** Initialize the writer **/
-            File f = new File("minimapOut.txt");
-            FileWriter fs = new FileWriter(f);
-            BufferedWriter out = new BufferedWriter(fs);
-
-            /** Stop the connection **/
-            out.close();
-        }
-
-        /**
-         * Get a value from the array using a prefix *
-         */
-        public static double getVal(String prefix) {
-            double val = 0;
-            try {
-                /** Read from the Station and update the array contents **/
-                ReadFromStation();
-                val = Double.parseDouble(getLine(stationOut, prefix));
-            } catch (Exception e) {
-                /** If the value is empty, error **/
-                System.err.println("ERROR: Read an empty line!");
-            }
-            return val;
-        }
-
-        /**
-         * Get a line from the specified array *
-         */
-        public static String getLine(ArrayList<String> textDoc, String prefix) {
-            for (int i = 0; i < textDoc.size(); i++) {
-                if (textDoc.get(i).contains(prefix))
-                    return textDoc.get(i).substring(textDoc.get(i).indexOf("=") + 1);
-            }
-            return "";
-        }
-
-    }
-
 }
