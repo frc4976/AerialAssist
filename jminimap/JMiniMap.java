@@ -1,11 +1,7 @@
-import org.omg.CORBA.COMM_FAILURE;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Scanner;
 
 public class JMiniMap extends JFrame implements KeyListener, MouseListener, ActionListener {
 
@@ -45,7 +41,7 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
 
     public void init(double ratioToScreen, boolean flipped) {
         /** Arena:  54ft x 24ft 8in
-         *          16.46m x 7.5m
+         *          16.46m x 7.52m
          *          1646cm x 752cm
          * 1. Get the Dimensions of the screen
          * 2. Create a ratio of the long wall to the short wall
@@ -81,7 +77,6 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
 
         /** Initialize the Robot **/
         robot.init();
-        locator.triptest();
     }
 
     public static JMiniMap getMiniMap() {
@@ -247,316 +242,43 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
      * The Coordinate Handler *
      */
     public class CoordLocator {
-        /**
-         * This Class solves the following problem;
-         * A robot is within an Arena.
-         * The robot is at the location (x0,y0), and oriented at angle theta
-         * Because of symmetry, theta is assumed to be between 0 and 90 degrees
-         * Notations;
-         * 0 Degrees         = North
-         * 90 Degrees        = East
-         * 180 Degrees       = South
-         * 270 Degrees       = West
-         * yAxis             = North-South
-         * xAxis             = East-West
-         * North Border      = T (TOP)
-         * East Border       = R (RIGHT)
-         * South Border      = B (BOTTOM)
-         * West Border       = L (LEFT)
-         * Robot Alignment is denoted by 4 letters
-         * Thus, designation TRLL means;
-         * T is to the front,
-         * R is to the right,
-         * L is to the back,
-         * L is to the left.
-         * The formula for each alignment is different
-         * Thus, by calculating sin ^ 2 + cos ^ 2, one can quickly see what alignment(s) are possible
-         * Variable a is used to denote the alternate (wall not seen)
-         */
 
-        public double[] distances, states, answers;
-        public double tolerance = 1e-5;
+        public double[] distances, states;
+        public double tolerance = 10;
 
         public void locateRobot() {
-            double F, R, B, L;
-            double Fa, Ra, Ba, La;
+            /** Variables to be found **/
+            double x0, y0, theta;
 
-            double x0, y0, theta, c, s;
+            /** Placeholder Variables **/
+            double x1, y1;
+
+            /** Unload Distances **/
+            double F, R, B, L, GYRO;
 
             F = distances[0];
             R = distances[1];
             B = distances[2];
             L = distances[3];
+            GYRO = distances[4];
 
-            /** TRBL & RBLT Cases, AKA the simplest of cases **/
-            if ((F + B >= 2) && Math.abs(F + B - R - L) < tolerance) {
-                c = 2 / (F + B);
-                theta = Math.acos(c);
-                s = Math.sin(theta);
-                y0 = -(F - B) / (F + B);
-                x0 = -(R - L) / (R + L);
-                Fa = (1 - x0) / s;
-                Ra = (1 + y0) / s;
-                Ba = (1 + x0) / s;
-                La = (1 - y0) / s;
-                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    states[0] = x0;
-                    states[1] = y0;
-                    states[2] = theta * 180.0 / Math.PI;
-                    return;
-                }
+            /** Perform Calculations **/
+            System.out.println(GYRO % (((int) (GYRO / 90)) * 90));
+            x1 = F * Math.cos(GYRO % (((int) (GYRO / 90)) * 90));
+            y1 = F * Math.sin(GYRO % (((int) (GYRO / 90)) * 90));
+            theta = GYRO;
 
-                x0 = -(F - B) / (F + B);
-                y0 = (R - L) / (F + B);
-                s = 2 / (F + B);
-                theta = Math.asin(s);
-                c = Math.cos(theta);
-                Fa = (1 - y0) / c;
-                Ra = (1 - x0) / c;
-                Ba = (y0 + 1) / c;
-                La = (x0 + 1) / c;
-                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    states[0] = x0;
-                    states[1] = y0;
-                    states[2] = theta * 180.0 / Math.PI;
-                    return;
-                }
-            }
-
-            /** RRBL Case **/
-            if (Math.abs((4 * (R * R + F * F)) / (F * F * (R + L)) - 1) < tolerance) {
-                c = 2 / (R + L);
-                theta = Math.acos(c);
-                x0 = -(R - L) / (R + L);
-                y0 = -(R + L - 2 * B) / (R + L);
-                s = (2 * R) / (F * R + F * L);
-                Fa = (1 - y0) / c;
-                Ra = (1 + y0) / s;
-                Ba = (1 + x0) / s;
-                La = (1 - y0) / s;
-                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    states[0] = x0;
-                    states[1] = y0;
-                    states[2] = theta * 180.0 / Math.PI;
-                    return;
-                }
-            }
-
-            /** RRLT Case **/
-            if (Math.abs((4 * (R * R + F * F)) / ((F + B) * (F + B) * R * R) - 1) < tolerance) {
-                x0 = -(F - B) / (F + B);
-                s = 2 / (F + B);
-                c = (2 * F) / ((F + B) * R);
-                theta = Math.acos(c);
-                y0 = -(2 * L - F - B) / (F + B);
-                Fa = (1 - y0) / c;
-                Ra = (y0 + 1) / s;
-                Ba = (y0 + 1) / c;
-                La = (x0 + 1) / c;
-                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    states[0] = x0;
-                    states[1] = y0;
-                    states[2] = theta * 180.0 / Math.PI;
-                    return;
-                }
-            }
-
-            /** RBBL Case **/
-            if (Math.abs((4 * (R * R + B * B)) / ((L * R + B * F) * (L * R + B * F)) - 1) < tolerance) {
-                x0 = (L * R - B * F) / (L * R + B * F);
-                s = (2 * B) / (L * R + B * F);
-                c = (2 * R) / (L * R + B * F);
-                theta = Math.acos(c);
-                y0 = -(L * R - 2 * B * R + B * F) / (L * R + B * F);
-                Fa = (1 - y0) / c;
-                Ra = (1 - x0) / c;
-                Ba = (x0 + 1) / s;
-                La = (1 - y0) / s;
-                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    states[0] = x0;
-                    states[1] = y0;
-                    states[2] = theta * 180.0 / Math.PI;
-                    return;
-                }
-            }
-
-            /** TRLL Case **/
-            if (Math.abs((4 * (L * L + B * B)) / (B * B * (R + L) * (R + L)) - 1) < tolerance) {
-                y0 = (R + L - 2 * F) / (R + L);
-                c = 2 / (R + L);
-                theta = Math.acos(c);
-                s = (2 * L) / (B * (R + L));
-                x0 = -(R - L) / (R + L);
-                Fa = (1 - x0) / s;
-                Ra = (y0 + 1) / s;
-                Ba = (y0 + 1) / c;
-                La = (1 - y0) / s;
-                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    states[0] = x0;
-                    states[1] = y0;
-                    states[2] = theta * 180.0 / Math.PI;
-                    return;
-                }
-            }
-
-            /** TBBL Case **/
-            if (Math.abs((4 * (R * R + B * B)) / ((F + B) * (F + B) * R * R) - 1) < tolerance) {
-                c = 2 / (F + B);
-                s = (2 * B) / ((F + B) * R);
-                y0 = -(F - B) / (F + B);
-                x0 = (2 * L - F - B) / (F + B);
-                Fa = (1 - x0) / s;
-                Ra = (1 - x0) / c;
-                Ba = (x0 + 1) / s;
-                La = (1 - y0) / s;
-                theta = Math.acos(c);
-                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    states[0] = x0;
-                    states[1] = y0;
-                    states[2] = theta * 180.0 / Math.PI;
-                    return;
-                }
-            }
-
-            /** TBLT Case **/
-            if (Math.abs((4 * (L * L + F * F)) / (F * F * (R + L) * (R + L)) - 1) < tolerance) {
-                c = (2 * L) / (F * (R + L));
-                s = 2 / (R + L);
-                y0 = (R - L) / (R + L);
-                x0 = -(R + L - 2 * B) / (R + L);
-                theta = Math.acos(c);
-                Fa = (1 - x0) / s;
-                Ra = (1 - x0) / c;
-                Ba = (y0 + 1) / c;
-                La = (x0 + 1) / c;
-                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    states[0] = x0;
-                    states[1] = y0;
-                    states[2] = theta * 180.0 / Math.PI;
-                }
-            }
-
-            /** RBLL Case **/
-            if (Math.abs((4 * (L * L + B * B)) / ((F + B) * (F + B) * L * L) - 1) < tolerance) {
-                s = 2 / (F + B);
-                y0 = (2 * R - F - B) / (F + B);
-                x0 = -(F - B) / (F + B);
-                c = (2 * B) / ((F + B) * L);
-                theta = Math.acos(c);
-                Fa = (1 - y0) / c;
-                Ra = (1 - x0) / c;
-                Ba = (y0 + 1) / c;
-                La = (1 - y0) / s;
-                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    states[0] = x0;
-                    states[1] = y0;
-                    states[2] = theta * 180.0 / Math.PI;
-                    return;
-                }
-            }
-
-            /** RRBT Case **/
-            if (Math.abs((4 * (R * R + F * F)) / ((L * R + B * F) * (L * R + B * F)) - 1) < tolerance) {
-                s = (2 * R) / (L * R + B * F);
-                c = (2 * F) / (L * R + B * F);
-                x0 = (L * R - 2 * F * R + B * F) / (L * R + B * F);
-                y0 = -(L * R - B * F) / (L * R + B * F);
-                theta = Math.acos(c);
-                Fa = (1 - y0) / c;
-                Ra = (y0 + 1) / s;
-                Ba = (x0 + 1) / s;
-                La = (x0 + 1) / c;
-                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    states[0] = x0;
-                    states[1] = y0;
-                    states[2] = theta * 180.0 / Math.PI;
-                    return;
-                }
-            }
-
-            /** TRBT Case **/
-            if (Math.abs((4 * (L * L + F * F)) / ((F + B) * (F + B) * L * L) - 1) < tolerance) {
-                c = 2 / (F + B);
-                x0 = -(2 * R - F - B) / (F + B);
-                y0 = -(F - B) / (F + B);
-                s = (2 * F) / ((F + B) * L);
-                Fa = (1 - x0) / s;
-                Ra = (y0 + 1) / s;
-                Ba = (x0 + 1) / s;
-                La = (x0 + 1) / c;
-                theta = Math.acos(c);
-                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    states[0] = x0;
-                    states[1] = y0;
-                    states[2] = theta * 180.0 / Math.PI;
-                    return;
-                }
-            }
-
-            /** RBBT Case **/
-            if (Math.abs((4 * (R * R + B * B)) / (B * B * (R + L) * (R + L)) - 1) < tolerance) {
-                s = 2 / (R + L);
-                y0 = (R - L) / (R + L);
-                x0 = (R + L - 2 * F) / (R + L);
-                c = (2 * R) / (B * (R + L));
-                Fa = (1 - y0) / c;
-                Ra = (1 - x0) / c;
-                Ba = (x0 + 1) / s;
-                La = (x0 + 1) / c;
-                theta = Math.acos(c);
-                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    states[0] = x0;
-                    states[1] = y0;
-                    states[2] = theta * 180.0 / Math.PI;
-                    return;
-                }
-            }
-
-            /** TBLL Case **/
-            if (Math.abs((4 * (L * L + B * B)) / ((L * R + B * F) * (L * R + B * F)) - 1) < tolerance) {
-                c = (2 * B) / (L * R + B * F);
-                y0 = (L * R - B * F) / (L * R + B * F);
-                x0 = -(L * R - 2 * B * L + B * F) / (L * R + B * F);
-                s = (2 * L) / (L * R + B * F);
-                Fa = (1 - x0) / s;
-                Ra = (1 - x0) / c;
-                Ba = (y0 + 1) / c;
-                La = (1 - y0) / s;
-                theta = Math.acos(c);
-                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    states[0] = x0;
-                    states[1] = y0;
-                    states[2] = theta * 180.0 / Math.PI;
-                    return;
-                }
-            }
-
-            /** TRLT Case **/
-            if (Math.abs((4 * (L * L + F * F)) / ((L * R + B * F) * (L * R + B * F)) - 1) < tolerance) {
-                c = (2 * L) / (L * R + B * F);
-                y0 = (L * R - 2 * F * L + B * F) / (L * R + B * F);
-                x0 = -(L * R - B * F) / (L * R + B * F);
-                s = (2 * F) / (L * R + B * F);
-                Fa = (1 - x0) / s;
-                Ra = (y0 + 1) / s;
-                Ba = (y0 + 1) / c;
-                La = (x0 + 1) / c;
-                theta = Math.acos(c);
-                if (F <= Fa && R <= Ra && B <= Ba && L <= La) {
-                    states[0] = x0;
-                    states[1] = y0;
-                    states[2] = theta * 180.0 / Math.PI;
-                    return;
-                }
-            }
+            /** Load States **/
+            states[0] = x1;
+            states[1] = y1;
+            states[2] = theta;
         }
 
-        public void triptest() {
-            distances = new double[4];
+        public void positionRobot() {
+            distances = new double[5];
             states = new double[3];
-            answers = new double[3];
             try {
-                File f = new File("triptest.txt");
+                File f = new File("stationOut.txt");
                 FileReader fr = new FileReader(f);
                 BufferedReader br = new BufferedReader(fr);
 
@@ -566,19 +288,9 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
                     distances[1] = Double.parseDouble(s.split(" ")[1]);
                     distances[2] = Double.parseDouble(s.split(" ")[2]);
                     distances[3] = Double.parseDouble(s.split(" ")[3]);
-                    answers[0] = Double.parseDouble(s.split(" ")[4]);
-                    answers[1] = Double.parseDouble(s.split(" ")[5]);
-                    answers[2] = Double.parseDouble(s.split(" ")[6]);
+                    distances[4] = Double.parseDouble(s.split(" ")[4]);
                     locateRobot();
-                    for (int i = 0; i < 3; ++i) {
-                        String prefix = "SUCCESS";
-                        if (i < 2)
-                            if (Math.abs(states[i] - answers[i]) > 0.01)
-                                prefix = "FAIL";
-                            else if (Math.abs(states[i] - answers[i]) > 1)
-                                prefix = "FAIL";
-                        System.out.println(prefix + ": calc: " + states[i] + " | answer: " + answers[i]);
-                    }
+                    robot.angle = states[2];
                 }
 
                 br.close();
@@ -662,6 +374,9 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
             g2.fillPolygon(drawArrow);
             g2.setColor(Color.BLACK);
             g2.drawPolygon(drawArrow);
+
+            /** Draw Rays **/
+            g2.drawLine((int) xPos, (int) yPos, (int) (xPos + locator.states[0]), (int) (yPos + locator.states[1]));
         }
 
         /**
@@ -669,6 +384,8 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
          */
         public void updatePosition() {
             /** Perform various mathematical calculations to draw the robot correctly each tick **/
+            locator.positionRobot();
+
             int x, y;
             for (int i = 0; i < shape.npoints; i++) {
                 x = (int) Math.round(shape.xpoints[i] * Math.cos(Math.toRadians(angle)) - shape.ypoints[i] * Math.sin(Math.toRadians(angle)));
@@ -688,23 +405,6 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
             drawShape.translate((int) xPos, (int) yPos);
             drawArrow.invalidate();
             drawArrow.translate((int) xPos, (int) yPos);
-        }
-
-        /**
-         * Set the position of the robot using information from the text file *
-         */
-        public void setPos(double x1, double x2, double y1, double y2, double y3, double r) {
-            angle = r;
-            boolean readyForUSCalibration = false;
-
-            /** Check if the robots angle is 10 degrees off a perpendicular angle **/
-            for (int i = -10; i < 11; i++)
-                if (((r + i) / 90) % 1 == 0)
-                    readyForUSCalibration = true;
-
-            /** If so, calibrate the robots position using the Ultrasonic sensors **/
-            if (readyForUSCalibration) {
-            }
         }
     }
 }
