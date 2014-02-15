@@ -244,14 +244,11 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
     public class CoordLocator {
 
         public double[] distances, states;
-        public double tolerance = 10;
+        public double deadzone = 750;
 
         public void locateRobot() {
             /** Variables to be found **/
-            double x0, y0, theta;
-
-            /** Placeholder Variables **/
-            double x1, y1;
+            double x0 = states[0], y0 = states[1], theta = states[2];
 
             /** Unload Distances **/
             double F, R, B, L, GYRO;
@@ -260,17 +257,33 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
             R = distances[1];
             B = distances[2];
             L = distances[3];
-            GYRO = distances[4];
+            GYRO = distances[4] + 360;
 
             /** Perform Calculations **/
-            System.out.println(GYRO % (((int) (GYRO / 90)) * 90));
-            x1 = F * Math.cos(GYRO % (((int) (GYRO / 90)) * 90));
-            y1 = F * Math.sin(GYRO % (((int) (GYRO / 90)) * 90));
+            /** F Case **/
+            if (F < B && F < deadzone) {
+                /** F & R Case **/
+                if (R < L && R < deadzone) {
+
+                } /** F & L Case **/
+                else if (L < deadzone) {
+
+                }
+            } /** B Case **/
+            else if (B < deadzone) {
+                /** B & R Case **/
+                if (R < L && R < deadzone) {
+
+                } /** B & L Case **/
+                else if (L < deadzone) {
+
+                }
+            }
             theta = GYRO;
 
             /** Load States **/
-            states[0] = x1;
-            states[1] = y1;
+            states[0] = x0;
+            states[1] = y0;
             states[2] = theta;
         }
 
@@ -354,6 +367,8 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
             drawArrow.addPoint(-robotWideSize / 2, -robotLongSize - robotLongSize / 2);
             drawArrow.addPoint(0, -robotLongSize * 2);
             drawArrow.addPoint(robotWideSize / 2, -robotLongSize - robotLongSize / 2);
+            xPos = ratioHeight * 752 / 2;
+            yPos = ratioWidth * 1646 / 2;
         }
 
         /**
@@ -374,9 +389,6 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
             g2.fillPolygon(drawArrow);
             g2.setColor(Color.BLACK);
             g2.drawPolygon(drawArrow);
-
-            /** Draw Rays **/
-            g2.drawLine((int) xPos, (int) yPos, (int) (xPos + locator.states[0]), (int) (yPos + locator.states[1]));
         }
 
         /**
