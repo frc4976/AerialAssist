@@ -259,12 +259,16 @@ public class JMiniMap extends JFrame implements KeyListener, MouseListener, Acti
             L = distances[3];
             GYRO = distances[4] + 360;
 
+            double quadrant = (int) ((GYRO - 360) / 45);
+
             /** Perform Calculations **/
             /** F Case **/
             if (F < B && F < deadzone) {
                 /** F & R Case **/
                 if (R < L && R < deadzone) {
-
+                    if (quadrant == 0) {
+                        
+                    }
                 } /** F & L Case **/
                 else if (L < deadzone) {
 
