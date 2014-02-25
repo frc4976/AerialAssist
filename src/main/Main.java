@@ -45,7 +45,7 @@ public class Main extends SimpleRobot {
 
         while (!TimerAutonomousMode) {
             networkTable.putNumber("aiuChannel2", aiu.getInputChannel(2));
-            if (aiu.getInputChannel(2) > 250) {
+            if (aiu.getInputChannel(2) >= 250) {
                 //System.out.println (aiu.getInputChannel(2));
                 System.out.println("Moving Forward");
                 pwmOutput.setOutputChannel(1, 177);
@@ -143,6 +143,7 @@ public class Main extends SimpleRobot {
                     break;
                 }
             }
+            break;
         }
     }
 
