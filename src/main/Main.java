@@ -7,7 +7,10 @@ import subsystems.*;
 
 public class Main extends SimpleRobot {
 
+    int rotation;
     long currentTime;
+    private long time, thistime;
+    private int degree;
 
     DriveTrain driveSystem = new DriveTrain();
     ControllerInput controller = new ControllerInput();
@@ -22,23 +25,23 @@ public class Main extends SimpleRobot {
     //Calibration calibration = new Calibration();
 
     public void robotInit() {
-        networkTable = NetworkTable.getTable("Dashboard");
+        networkTable = NetworkTable.getTable("SmartDashboard");
     }
-    
+
     public void autonomous() {
         boolean CameraInput = false;
         boolean RobotTurned = false;
         boolean TimerAutonomousMode = false;
         double NinetyDegreeeTurningTime = 0.7;
-        
+
         long Time = System.currentTimeMillis();
 
         networkTable.putNumber("aiuChannel2", aiu.getInputChannel(2));
-        
+
         if (aiu.getInputChannel(2) > 900 || aiu.getInputChannel(2) < 100) {
             TimerAutonomousMode = true;
         }
-        
+
         networkTable.putNumber("aiuChannel2", aiu.getInputChannel(2));
         /*System.out.println(cameraInput.getBoolean(""));
          System.out.println(cameraInput.containsKey(""));*/
@@ -71,7 +74,7 @@ public class Main extends SimpleRobot {
             pwmOutput.setOutputChannel(3, 77);
             pwmOutput.setOutputChannel(4, 77);
             Timer.delay(2);
-        
+
             System.out.println("Robot Stopped");
             pwmOutput.setOutputChannel(1, 127);
             pwmOutput.setOutputChannel(2, 127);
@@ -100,12 +103,16 @@ public class Main extends SimpleRobot {
             System.out.println("Fired");
             pwmOutput.setOutputChannel(7, 67);
             Timer.delay(0.3);
+            time = System.currentTimeMillis();
+            thistime = System.currentTimeMillis() - time;
             while (true) {
-                if (!diu.getInputChannel(1)) {
+                if (diu.getInputChannel(1) && thistime >= 333) {
                     System.out.println("Nautilus Stopped");
                     pwmOutput.setOutputChannel(7, 127);
                     break;
-                } 
+                } else {
+                    thistime = System.currentTimeMillis() - time;
+                }
             }
             break;
         }
@@ -136,11 +143,15 @@ public class Main extends SimpleRobot {
             Timer.delay(0.3);
 
             System.out.println("Hit Button Number 1 NOW!!!");
+            time = System.currentTimeMillis();
+            thistime = System.currentTimeMillis() - time;
             while (true) {
-                if (diu.getInputChannel(1)) {
+                if (diu.getInputChannel(1) && thistime >= 333) {
                     System.out.println("Nautilus Stopped");
                     pwmOutput.setOutputChannel(7, 127);
                     break;
+                } else {
+                    thistime = System.currentTimeMillis() - time;
                 }
             }
             break;
@@ -153,14 +164,14 @@ public class Main extends SimpleRobot {
         while (this.isEnabled()) {
 
             networkTable.putBoolean("prox1", diu.getInputChannel(1));
+            networkTable.putNumber("aiuChannel1", aiu.getInputChannel(1));
             networkTable.putNumber("aiuChannel2", aiu.getInputChannel(2));
-            
-            if (aiu.getInputChannel(2) < 250)
-            {
+            networkTable.putNumber("aiuChannel3", aiu.getInputChannel(3));
+            networkTable.putNumber("aiuChannel4", aiu.getInputChannel(4));
+
+            if (aiu.getInputChannel(2) < 250) {
                 System.out.println("Fire!!!");
-            }
-            else
-            {
+            } else {
                 System.out.println("The Distance is " + aiu.getInputChannel(2) + " cm");
             }
 
@@ -197,15 +208,27 @@ public class Main extends SimpleRobot {
 
             //calibration.PreGameCalibration(true, true, true, true, true);
             Timer.delay(0.01);
+
+            /*if (controller.getSecondaryRawButton(9)) {
+                rotation = 0;
+            }
+
+            if (aiu.getInputChannel(5) < 2.528 || aiu.getInputChannel(5) > 2.568) {
+                rotation = (int) (rotation + (aiu.getInputChannel(5) * 1000 - 2548) / 100);
+            }
+
+            int degree = (int) (rotation / 3.7);*/
+
+            double gyro = aiu.getInputChannel(5);
+            int gyroZeroVoltage = (int) (gyro * 1000 - 2500); 
+            int currentAngle = (int) (gyroZeroVoltage / 3.7);
+            degree += currentAngle;
+
         }
     }
 
     public void test() {
-        while (this.isEnabled()) {
-            networkTable.putNumber("aiuChannel1", aiu.getInputChannel(1));
-            networkTable.putNumber("aiuChannel2", aiu.getInputChannel(2));
-            networkTable.putNumber("aiuChannel3", aiu.getInputChannel(3));
-            networkTable.putNumber("aiuChannel4", aiu.getInputChannel(4));
-        }
+            
+        aiu.gyro.getAngle();
     }
 }
