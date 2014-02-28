@@ -18,25 +18,25 @@ public class Catapult {
                 time = System.currentTimeMillis();
                 thistime = System.currentTimeMillis() - time;
                 bHardShotProcess = true;
-                send = 67;
+                send = 40;
                 //bHardShooting = true;
                 bWaiting = true;
             }
             if (bWaiting) {
-                send = 67;
+                send = 40;
                 if (NautilusTopSen) {
                     bHardShooting = true;
                     bWaiting = false;
                 }
             }
             if (bHardShooting) {
-                if (!NautilusTopSen && thistime >= 333) {
+                if (!NautilusTopSen && thistime >= 700) {
                     send = 127;
                     bHardShooting = false;
                     bHardShotProcess = false;
                 } else {
                     thistime = System.currentTimeMillis() - time;
-                    send = 67;
+                    send = 40;
                 }
             }
 

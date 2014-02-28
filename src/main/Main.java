@@ -27,134 +27,134 @@ public class Main extends SimpleRobot {
     public void robotInit() {
         networkTable = NetworkTable.getTable("SmartDashboard");
     }
+    
+    public void disabled() {
+        while (this.isDisabled()) {
+            networkTable.putNumber("UltraSonic1", aiu.getInputChannel(2));
+            networkTable.putNumber("UltraSonic2", aiu.getInputChannel(3));
+            networkTable.putNumber("UltraSonic3", aiu.getInputChannel(4));
+            networkTable.putNumber("UltraSonic4", aiu.getInputChannel(5));
+        }
+    }
 
     public void autonomous() {
-        boolean CameraInput = false;
-        boolean RobotTurned = false;
-        boolean TimerAutonomousMode = false;
-        double NinetyDegreeeTurningTime = 0.7;
 
-        long Time = System.currentTimeMillis();
+        int state = 1;
+        boolean sensorFail = aiu.getInputChannel(2) < 200;
 
-        networkTable.putNumber("aiuChannel2", aiu.getInputChannel(2));
-
-        if (aiu.getInputChannel(2) > 900 || aiu.getInputChannel(2) < 100) {
-            TimerAutonomousMode = true;
-        }
-
-        networkTable.putNumber("aiuChannel2", aiu.getInputChannel(2));
-        /*System.out.println(cameraInput.getBoolean(""));
-         System.out.println(cameraInput.containsKey(""));*/
-
-        while (!TimerAutonomousMode) {
-            networkTable.putNumber("aiuChannel2", aiu.getInputChannel(2));
-            if (aiu.getInputChannel(2) >= 250) {
-                //System.out.println (aiu.getInputChannel(2));
-                System.out.println("Moving Forward");
-                pwmOutput.setOutputChannel(1, 177);
-                pwmOutput.setOutputChannel(2, 177);
-                pwmOutput.setOutputChannel(3, 77);
-                pwmOutput.setOutputChannel(4, 77);
+        while (this.isEnabled() && !sensorFail) {
+            
+            networkTable.putNumber("UltraSonic1", aiu.getInputChannel(2));
+            networkTable.putNumber("UltraSonic2", aiu.getInputChannel(3));
+            networkTable.putNumber("UltraSonic3", aiu.getInputChannel(4));
+            networkTable.putNumber("UltraSonic4", aiu.getInputChannel(5));
+            
+            if (state == 1) {
+                if (aiu.getInputChannel(2) >= 300) {
+                    System.out.println("driving forward");
+                    driveSystem.autonomousDrive(-0.3, 0);
+                    pwmOutput.setOutputChannel(1, driveSystem.drive.getOutput(1));
+                    pwmOutput.setOutputChannel(2, driveSystem.drive.getOutput(1));
+                    pwmOutput.setOutputChannel(3, driveSystem.drive.getOutput(2));
+                    pwmOutput.setOutputChannel(4, driveSystem.drive.getOutput(2));
+                } else {
+                    System.out.println("stopping");
+                    driveSystem.autonomousDrive(0, 0);
+                    pwmOutput.setOutputChannel(1, driveSystem.drive.getOutput(1));
+                    pwmOutput.setOutputChannel(2, driveSystem.drive.getOutput(1));
+                    pwmOutput.setOutputChannel(3, driveSystem.drive.getOutput(2));
+                    pwmOutput.setOutputChannel(4, driveSystem.drive.getOutput(2));
+                    state = 2;
+                }
+            } else if (state == 2) {
+                    
+                pwmOutput.setOutputChannel(5, 95);
+                Timer.delay(0.2);
+                pwmOutput.setOutputChannel(5, 125);
+                
+                System.out.println("turning");
+                driveSystem.autonomousDrive(0, -0.5);
+                pwmOutput.setOutputChannel(1, driveSystem.drive.getOutput(1));
+                pwmOutput.setOutputChannel(2, driveSystem.drive.getOutput(1));
+                pwmOutput.setOutputChannel(3, driveSystem.drive.getOutput(2));
+                pwmOutput.setOutputChannel(4, driveSystem.drive.getOutput(2));
+                Timer.delay(1.2);
+                System.out.println("stopping");
+                driveSystem.autonomousDrive(0, 0);
+                pwmOutput.setOutputChannel(1, driveSystem.drive.getOutput(1));
+                pwmOutput.setOutputChannel(2, driveSystem.drive.getOutput(1));
+                pwmOutput.setOutputChannel(3, driveSystem.drive.getOutput(2));
+                pwmOutput.setOutputChannel(4, driveSystem.drive.getOutput(2));
+                state = 3;
+            } else if (state == 3) {
+                System.out.println("Firing");
+                catapult.shot(true, !diu.getInputChannel(1), false, true);
+                pwmOutput.setOutputChannel(7, catapult.getNautilusMotor());
+                if (catapult.getNautilusMotor() == 127) {
+                    state = 0;
+                }
             } else {
-                System.out.println("Robot Stopped");
-                pwmOutput.setOutputChannel(1, 127);
-                pwmOutput.setOutputChannel(2, 127);
-                pwmOutput.setOutputChannel(3, 127);
-                pwmOutput.setOutputChannel(4, 127);
+                System.out.println("disabling");
                 break;
             }
         }
 
-        while (TimerAutonomousMode) {
-            networkTable.putNumber("aiuChannel2", aiu.getInputChannel(2));
-            //System.out.println (aiu.getInputChannel(2));
-            System.out.println("Moving Forward");
-            pwmOutput.setOutputChannel(1, 177);
-            pwmOutput.setOutputChannel(2, 177);
-            pwmOutput.setOutputChannel(3, 77);
-            pwmOutput.setOutputChannel(4, 77);
-            Timer.delay(2);
+        while (this.isEnabled() && sensorFail) {
+            
+            networkTable.putNumber("UltraSonic1", aiu.getInputChannel(2));
+            networkTable.putNumber("UltraSonic2", aiu.getInputChannel(3));
+            networkTable.putNumber("UltraSonic3", aiu.getInputChannel(4));
+            networkTable.putNumber("UltraSonic4", aiu.getInputChannel(5));
+            
+            
+            if (state == 1) {
+                System.out.println("driving forward - sensor failed");
+                driveSystem.autonomousDrive(-0.3, 0);
+                pwmOutput.setOutputChannel(1, driveSystem.drive.getOutput(1));
+                pwmOutput.setOutputChannel(2, driveSystem.drive.getOutput(1));
+                pwmOutput.setOutputChannel(3, driveSystem.drive.getOutput(2));
+                pwmOutput.setOutputChannel(4, driveSystem.drive.getOutput(2));
 
-            System.out.println("Robot Stopped");
-            pwmOutput.setOutputChannel(1, 127);
-            pwmOutput.setOutputChannel(2, 127);
-            pwmOutput.setOutputChannel(3, 127);
-            pwmOutput.setOutputChannel(4, 127);
-            break;
+                Timer.delay(2.9);
 
-        }
-
-        while (CameraInput) {
-            networkTable.putNumber("aiuChannel2", aiu.getInputChannel(2));
-            System.out.println("Turning");
-            pwmOutput.setOutputChannel(1, 77);
-            pwmOutput.setOutputChannel(2, 77);
-            pwmOutput.setOutputChannel(3, 77);
-            pwmOutput.setOutputChannel(4, 77);
-            Timer.delay(NinetyDegreeeTurningTime);
-
-            System.out.println("Stopped");
-            pwmOutput.setOutputChannel(1, 127);
-            pwmOutput.setOutputChannel(2, 127);
-            pwmOutput.setOutputChannel(3, 127);
-            pwmOutput.setOutputChannel(4, 127);
-            Timer.delay(1);
-
-            System.out.println("Fired");
-            pwmOutput.setOutputChannel(7, 67);
-            Timer.delay(0.3);
-            time = System.currentTimeMillis();
-            thistime = System.currentTimeMillis() - time;
-            while (true) {
-                if (diu.getInputChannel(1) && thistime >= 333) {
-                    System.out.println("Nautilus Stopped");
-                    pwmOutput.setOutputChannel(7, 127);
-                    break;
-                } else {
-                    thistime = System.currentTimeMillis() - time;
+                System.out.println("stopping - sensor failed");
+                driveSystem.autonomousDrive(0, 0);
+                pwmOutput.setOutputChannel(1, driveSystem.drive.getOutput(1));
+                pwmOutput.setOutputChannel(2, driveSystem.drive.getOutput(1));
+                pwmOutput.setOutputChannel(3, driveSystem.drive.getOutput(2));
+                pwmOutput.setOutputChannel(4, driveSystem.drive.getOutput(2));
+                state = 2;
+            } else if (state == 2) {
+                
+                pwmOutput.setOutputChannel(5, 95);
+                Timer.delay(0.2);
+                pwmOutput.setOutputChannel(5, 125);
+                
+                System.out.println("turning - sensor failed");
+                driveSystem.autonomousDrive(0, -0.5);
+                pwmOutput.setOutputChannel(1, driveSystem.drive.getOutput(1));
+                pwmOutput.setOutputChannel(2, driveSystem.drive.getOutput(1));
+                pwmOutput.setOutputChannel(3, driveSystem.drive.getOutput(2));
+                pwmOutput.setOutputChannel(4, driveSystem.drive.getOutput(2));
+                Timer.delay(1.2);
+                System.out.print("stopping - sensor failed");
+                driveSystem.autonomousDrive(0, 0);
+                pwmOutput.setOutputChannel(1, driveSystem.drive.getOutput(1));
+                pwmOutput.setOutputChannel(2, driveSystem.drive.getOutput(1));
+                pwmOutput.setOutputChannel(3, driveSystem.drive.getOutput(2));
+                pwmOutput.setOutputChannel(4, driveSystem.drive.getOutput(2));
+                state = 3;
+            } else if (state == 3) {
+                System.out.println("Firing - sensor failed");
+                catapult.shot(true, !diu.getInputChannel(1), false, true);
+                pwmOutput.setOutputChannel(7, catapult.getNautilusMotor());
+                if (catapult.getNautilusMotor() == 127) {
+                    state = 0;
                 }
+            } else {
+                System.out.println("disabling - sensor failed");
+                break;
             }
-            break;
-        }
-
-        while (!CameraInput) {
-            networkTable.putNumber("aiuChannel2", aiu.getInputChannel(2));
-            if (!RobotTurned && ((System.currentTimeMillis() - Time) > 5000)) //Change this to wait more to blind fire
-            {
-                System.out.println("Turning");
-                pwmOutput.setOutputChannel(1, 77);
-                pwmOutput.setOutputChannel(2, 77);
-                pwmOutput.setOutputChannel(3, 77);
-                pwmOutput.setOutputChannel(4, 77);
-
-                Timer.delay(NinetyDegreeeTurningTime);
-
-                System.out.println("Turning Stopped");
-                pwmOutput.setOutputChannel(1, 127);
-                pwmOutput.setOutputChannel(2, 127);
-                pwmOutput.setOutputChannel(3, 127);
-                pwmOutput.setOutputChannel(4, 127);
-                RobotTurned = true;
-            }
-
-            Timer.delay(1);
-            pwmOutput.setOutputChannel(7, 67);
-            System.out.println("Blind Nautilus Fired");
-            Timer.delay(0.3);
-
-            System.out.println("Hit Button Number 1 NOW!!!");
-            time = System.currentTimeMillis();
-            thistime = System.currentTimeMillis() - time;
-            while (true) {
-                if (diu.getInputChannel(1) && thistime >= 333) {
-                    System.out.println("Nautilus Stopped");
-                    pwmOutput.setOutputChannel(7, 127);
-                    break;
-                } else {
-                    thistime = System.currentTimeMillis() - time;
-                }
-            }
-            break;
         }
     }
 
@@ -168,6 +168,8 @@ public class Main extends SimpleRobot {
             networkTable.putNumber("aiuChannel2", aiu.getInputChannel(2));
             networkTable.putNumber("aiuChannel3", aiu.getInputChannel(3));
             networkTable.putNumber("aiuChannel4", aiu.getInputChannel(4));
+
+            System.out.print(aiu.getInputChannel(1));
 
             if (aiu.getInputChannel(2) < 250) {
                 System.out.println("Fire!!!");
@@ -210,25 +212,24 @@ public class Main extends SimpleRobot {
             Timer.delay(0.01);
 
             /*if (controller.getSecondaryRawButton(9)) {
-                rotation = 0;
-            }
+             rotation = 0;
+             }
 
-            if (aiu.getInputChannel(5) < 2.528 || aiu.getInputChannel(5) > 2.568) {
-                rotation = (int) (rotation + (aiu.getInputChannel(5) * 1000 - 2548) / 100);
-            }
+             if (aiu.getInputChannel(5) < 2.528 || aiu.getInputChannel(5) > 2.568) {
+             rotation = (int) (rotation + (aiu.getInputChannel(5) * 1000 - 2548) / 100);
+             }
 
-            int degree = (int) (rotation / 3.7);*/
-
-            double gyro = aiu.getInputChannel(5);
-            int gyroZeroVoltage = (int) (gyro * 1000 - 2500); 
-            int currentAngle = (int) (gyroZeroVoltage / 3.7);
-            degree += currentAngle;
-
+             int degree = (int) (rotation / 3.7);*/
+            /*
+             double gyro = aiu.getInputChannel(5);
+             int gyroZeroVoltage = (int) (gyro * 1000 - 2500); 
+             int currentAngle = (int) (gyroZeroVoltage / 3.7);
+             degree += currentAngle;*/
         }
     }
 
     public void test() {
-            
-        aiu.gyro.getAngle();
+
+        //aiu.gyro.getAngle();
     }
 }

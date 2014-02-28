@@ -40,10 +40,13 @@ public class CustomRobotDrive {
     
     public void arcadeDrive(double drive, double steer) {
         
-        int center = iMiddleOfByte + iTrim;
+        int center = iMiddleOfByte;
 
         iFinalRight = (int) (center + ((iMiddleOfByte * drive) + (steer * iMiddleOfByte)));
         iFinalLeft = (int) (center - ((iMiddleOfByte * drive) - (steer * iMiddleOfByte)));
+        
+        System.out.println("left " + iFinalLeft);
+        System.out.println("right " + iFinalRight);
         
         if (iFinalRight > iMaximumOfByte) {
             iFinalRight = iMaximumOfByte;

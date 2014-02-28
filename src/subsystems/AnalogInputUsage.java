@@ -12,7 +12,7 @@ public class AnalogInputUsage {
     AnalogChannel AnalogInputChannel5 = new AnalogChannel(1,5);
     AnalogChannel AnalogInputChannel6 = new AnalogChannel(1,6);
     AnalogChannel AnalogInputChannel7 = new AnalogChannel(1,7);
-    public Gyro gyro = new Gyro(AnalogInputChannel5);
+    //public Gyro gyro = new Gyro(AnalogInputChannel5);
 
     public double getInputChannel(int args) {
         double send = (int) AnalogInputChannel1.getVoltage();

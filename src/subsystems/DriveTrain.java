@@ -64,11 +64,14 @@ public class DriveTrain {
     public void arcadeDrive(double args1, double args2) {
         drive.setTrim(iTrim);
         double driveX;
+        
         if (args1 > 0.15 || args1 < -0.15) {
             driveX = (args1 - 0.15) / 0.85;
         } else {
             driveX = 0;
         }
+        System.out.println("joystickX " + args1);
+        System.out.println("driveX " + driveX);
         
         drive.arcadeDrive(args2 * dThrottle, driveX * dThrottle);
     }
@@ -107,7 +110,7 @@ public class DriveTrain {
     
     
     public void autonomousDrive(double args, double args1) {
-        drive.setTrim(iTrim);
+        //drive.setTrim(iTrim);
         drive.arcadeDrive(args, args1);
     }
 }
