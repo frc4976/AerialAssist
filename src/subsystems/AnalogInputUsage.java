@@ -10,7 +10,7 @@ public class AnalogInputUsage {
     AnalogChannel AnalogInputChannel3 = new AnalogChannel(1,3);
     AnalogChannel AnalogInputChannel4 = new AnalogChannel(1,4);
     AnalogChannel AnalogInputChannel5 = new AnalogChannel(1,5);
-    AnalogChannel AnalogInputChannel6 = new AnalogChannel(1,6);
+    //Gyro gyroscope = new Gyro(6);
     AnalogChannel AnalogInputChannel7 = new AnalogChannel(1,7);
     //public Gyro gyro = new Gyro(AnalogInputChannel5);
 
@@ -28,7 +28,7 @@ public class AnalogInputUsage {
         } else if (args == 5) {
             send = (double) AnalogInputChannel5.getVoltage();
         } else if (args == 6) {
-            send = (int) AnalogInputChannel6.getVoltage();
+            //send = gyroscope.getAngle();
         } else if (args == 7) {
             send = (int) AnalogInputChannel7.getVoltage();
         }

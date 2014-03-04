@@ -40,7 +40,7 @@ public class Main extends SimpleRobot {
     public void autonomous() {
 
         int state = 1;
-        boolean sensorFail = aiu.getInputChannel(2) < 200;
+        boolean sensorFail = true;
 
         while (this.isEnabled() && !sensorFail) {
             
@@ -115,7 +115,7 @@ public class Main extends SimpleRobot {
                 pwmOutput.setOutputChannel(3, driveSystem.drive.getOutput(2));
                 pwmOutput.setOutputChannel(4, driveSystem.drive.getOutput(2));
 
-                Timer.delay(2.9);
+                Timer.delay(5);
 
                 System.out.println("stopping - sensor failed");
                 driveSystem.autonomousDrive(0, 0);
@@ -123,20 +123,22 @@ public class Main extends SimpleRobot {
                 pwmOutput.setOutputChannel(2, driveSystem.drive.getOutput(1));
                 pwmOutput.setOutputChannel(3, driveSystem.drive.getOutput(2));
                 pwmOutput.setOutputChannel(4, driveSystem.drive.getOutput(2));
+                Timer.delay(0.5);
                 state = 2;
             } else if (state == 2) {
                 
                 pwmOutput.setOutputChannel(5, 95);
                 Timer.delay(0.2);
                 pwmOutput.setOutputChannel(5, 125);
+                Timer.delay(0.5);
                 
                 System.out.println("turning - sensor failed");
-                driveSystem.autonomousDrive(0, -0.5);
+                driveSystem.autonomousDrive(0, -0.4);
                 pwmOutput.setOutputChannel(1, driveSystem.drive.getOutput(1));
                 pwmOutput.setOutputChannel(2, driveSystem.drive.getOutput(1));
                 pwmOutput.setOutputChannel(3, driveSystem.drive.getOutput(2));
                 pwmOutput.setOutputChannel(4, driveSystem.drive.getOutput(2));
-                Timer.delay(1.2);
+                Timer.delay(1.4);
                 System.out.print("stopping - sensor failed");
                 driveSystem.autonomousDrive(0, 0);
                 pwmOutput.setOutputChannel(1, driveSystem.drive.getOutput(1));
@@ -145,6 +147,7 @@ public class Main extends SimpleRobot {
                 pwmOutput.setOutputChannel(4, driveSystem.drive.getOutput(2));
                 state = 3;
             } else if (state == 3) {
+                Timer.delay(0.5);
                 System.out.println("Firing - sensor failed");
                 catapult.shot(true, !diu.getInputChannel(1), false, true);
                 pwmOutput.setOutputChannel(7, catapult.getNautilusMotor());
@@ -230,6 +233,8 @@ public class Main extends SimpleRobot {
 
     public void test() {
 
-        //aiu.gyro.getAngle();
+        while(this.isEnabled()) {
+            System.out.println(aiu.getInputChannel(6));
+        }
     }
 }
