@@ -7,12 +7,19 @@
 package subsystems;
 import com.sun.squawk.util.Arrays;
 import edu.wpi.first.wpilibj.DigitalInput;
+import main.Main;
 /**
  *
  * @author Mo
  */
 public class Calibration {
     DigitalInput bTopPositionSensor = new DigitalInput (2);
+    
+    private Main main;
+    
+    public Calibration(Main add) {
+        main = add;
+    }
     
     public void StartGameCaliration (boolean bUserInput) 
     {

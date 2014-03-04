@@ -32,4 +32,26 @@ public class PWMOutput {
             pwmChannel8.setRaw(output);
         }
     }
+    
+        public int setOutputChannel(int args) {
+        if (args == 1) {
+            return pwmChannel1.getRaw();
+        } else if (args == 2) {
+            return pwmChannel2.getRaw();
+        } else if (args == 3) {
+            return pwmChannel3.getRaw();
+        } else if (args == 4) {
+            return pwmChannel4.getRaw();
+        } else if (args == 5) {
+            return pwmChannel5.getRaw();
+        } else if (args == 6) {
+            return pwmChannel6.getRaw();
+        } else if (args == 7) {
+            return pwmChannel7.getRaw();
+        } else if (args == 8) {
+            return pwmChannel8.getRaw();
+        } else {
+            return -1;
+        }
+    }
 }

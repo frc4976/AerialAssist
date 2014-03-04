@@ -1,5 +1,7 @@
 package subsystems;
 
+import main.Main;
+
 public class LoadingArms {
 
     //Processes
@@ -8,6 +10,12 @@ public class LoadingArms {
     int iFrontLoadingMotor;
     int iFrontArmMotor;
 
+    private Main main;
+    
+    public LoadingArms(Main add) {
+        main = add;
+    }
+    
     /*////////////////////////////////////////////////////////////////////////////
         
      TO TEST

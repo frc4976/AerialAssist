@@ -1,6 +1,7 @@
 package subsystems;
 
 import edu.wpi.first.wpilibj.Joystick;
+import main.Main;
 
 public class ControllerInput {
 
@@ -11,6 +12,12 @@ public class ControllerInput {
     private double[] secondaryRawAxis;
     private boolean[] mainRawButton;
     private boolean[] secondaryRawButton;
+    
+    private Main main;
+    
+    public ControllerInput(Main add) {
+        main = add;
+    }
     
     public double getMainRawAxis(int args) {
         return mainRawAxis[args];

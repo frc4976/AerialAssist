@@ -1,6 +1,7 @@
 package subsystems;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import main.Main;
 
 public class DigitalInputUsage {
 
@@ -13,6 +14,12 @@ public class DigitalInputUsage {
     DigitalInput inputChannel7 = new DigitalInput(7);
     DigitalInput inputChannel8 = new DigitalInput(8);
 
+    private Main main;
+    
+    public DigitalInputUsage(Main add) {
+        main = add;
+    }
+    
     public boolean getInputChannel(int args) {
         boolean send = inputChannel1.get();
 

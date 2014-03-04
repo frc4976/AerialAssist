@@ -12,15 +12,15 @@ public class Main extends SimpleRobot {
     private long time, thistime;
     private int degree;
 
-    DriveTrain driveSystem = new DriveTrain();
-    ControllerInput controller = new ControllerInput();
-    public DigitalInputUsage diu = new DigitalInputUsage();
-    AnalogInputUsage aiu = new AnalogInputUsage();
-    Catapult catapult = new Catapult();
-    LoadingArms loadingArms = new LoadingArms();
-    SafetyWatchDog safe = new SafetyWatchDog();
-    PWMOutput pwmOutput = new PWMOutput();
-    NetworkTable networkTable;
+    public DriveTrain driveSystem = new DriveTrain(this);
+    public ControllerInput controller = new ControllerInput(this);
+    public DigitalInputUsage diu = new DigitalInputUsage(this);
+    public AnalogInputUsage aiu = new AnalogInputUsage(this);
+    public Catapult catapult = new Catapult(this);
+    public LoadingArms loadingArms = new LoadingArms(this);
+    public SafetyWatchDog safe = new SafetyWatchDog(this);
+    public PWMOutput pwmOutput = new PWMOutput();
+    public NetworkTable networkTable;
     //Autonomous autonomous = new Autonomous();
     //Calibration calibration = new Calibration();
 
@@ -30,10 +30,11 @@ public class Main extends SimpleRobot {
     
     public void disabled() {
         while (this.isDisabled()) {
-            networkTable.putNumber("UltraSonic1", aiu.getInputChannel(2));
-            networkTable.putNumber("UltraSonic2", aiu.getInputChannel(3));
-            networkTable.putNumber("UltraSonic3", aiu.getInputChannel(4));
-            networkTable.putNumber("UltraSonic4", aiu.getInputChannel(5));
+            networkTable.putNumber("gyro", aiu.getInputChannel(2));
+            networkTable.putNumber("Ultrasonic1", aiu.getInputChannel(3));
+            networkTable.putNumber("Ultrasonic2", aiu.getInputChannel(4));
+            networkTable.putNumber("Ultrasonic3", aiu.getInputChannel(5));
+            networkTable.putNumber("Ultrasonic4", aiu.getInputChannel(6));
         }
     }
 
@@ -44,10 +45,11 @@ public class Main extends SimpleRobot {
 
         while (this.isEnabled() && !sensorFail) {
             
-            networkTable.putNumber("UltraSonic1", aiu.getInputChannel(2));
-            networkTable.putNumber("UltraSonic2", aiu.getInputChannel(3));
-            networkTable.putNumber("UltraSonic3", aiu.getInputChannel(4));
-            networkTable.putNumber("UltraSonic4", aiu.getInputChannel(5));
+            networkTable.putNumber("gyro", aiu.getInputChannel(2));
+            networkTable.putNumber("Ultrasonic1", aiu.getInputChannel(3));
+            networkTable.putNumber("Ultrasonic2", aiu.getInputChannel(4));
+            networkTable.putNumber("Ultrasonic3", aiu.getInputChannel(5));
+            networkTable.putNumber("Ultrasonic4", aiu.getInputChannel(6));
             
             if (state == 1) {
                 if (aiu.getInputChannel(2) >= 300) {
@@ -88,9 +90,8 @@ public class Main extends SimpleRobot {
                 state = 3;
             } else if (state == 3) {
                 System.out.println("Firing");
-                catapult.shot(true, !diu.getInputChannel(1), false, true);
-                pwmOutput.setOutputChannel(7, catapult.getNautilusMotor());
-                if (catapult.getNautilusMotor() == 127) {
+                catapult.shot();
+                if (pwmOutput.getOutputChannel(7) == 127) {
                     state = 0;
                 }
             } else {
@@ -101,11 +102,11 @@ public class Main extends SimpleRobot {
 
         while (this.isEnabled() && sensorFail) {
             
-            networkTable.putNumber("UltraSonic1", aiu.getInputChannel(2));
-            networkTable.putNumber("UltraSonic2", aiu.getInputChannel(3));
-            networkTable.putNumber("UltraSonic3", aiu.getInputChannel(4));
-            networkTable.putNumber("UltraSonic4", aiu.getInputChannel(5));
-            
+            networkTable.putNumber("gyro", aiu.getInputChannel(2));
+            networkTable.putNumber("Ultrasonic1", aiu.getInputChannel(3));
+            networkTable.putNumber("Ultrasonic2", aiu.getInputChannel(4));
+            networkTable.putNumber("Ultrasonic3", aiu.getInputChannel(5));
+            networkTable.putNumber("Ultrasonic4", aiu.getInputChannel(6));
             
             if (state == 1) {
                 System.out.println("driving forward - sensor failed");
@@ -149,9 +150,8 @@ public class Main extends SimpleRobot {
             } else if (state == 3) {
                 Timer.delay(0.5);
                 System.out.println("Firing - sensor failed");
-                catapult.shot(true, !diu.getInputChannel(1), false, true);
-                pwmOutput.setOutputChannel(7, catapult.getNautilusMotor());
-                if (catapult.getNautilusMotor() == 127) {
+                catapult.shot();
+                if (pwmOutput.getOutputChannel(7) == 127) {
                     state = 0;
                 }
             } else {
@@ -166,11 +166,11 @@ public class Main extends SimpleRobot {
         System.out.println(System.currentTimeMillis());
         while (this.isEnabled()) {
 
-            networkTable.putBoolean("prox1", diu.getInputChannel(1));
-            networkTable.putNumber("aiuChannel1", aiu.getInputChannel(1));
-            networkTable.putNumber("aiuChannel2", aiu.getInputChannel(2));
-            networkTable.putNumber("aiuChannel3", aiu.getInputChannel(3));
-            networkTable.putNumber("aiuChannel4", aiu.getInputChannel(4));
+            networkTable.putNumber("gyro", aiu.getInputChannel(2));
+            networkTable.putNumber("Ultrasonic1", aiu.getInputChannel(3));
+            networkTable.putNumber("Ultrasonic2", aiu.getInputChannel(4));
+            networkTable.putNumber("Ultrasonic3", aiu.getInputChannel(5));
+            networkTable.putNumber("Ultrasonic4", aiu.getInputChannel(6));
 
             System.out.print(aiu.getInputChannel(1));
 
@@ -190,14 +190,13 @@ public class Main extends SimpleRobot {
             driveSystem.turn();
 
             // safe.BatteryCheck();
-            //System.out.println(diu.getInputChannel(2));           
-            loadingArms.loadFront(controller.getMainRightY(), diu.getInputChannel(5), diu.getInputChannel(4), controller.getMainRawButton(1), controller.getMainRawButton(4));
-            catapult.shot(controller.getMainRawButton(3), !diu.getInputChannel(1), controller.getMainRawButton(2), !diu.getInputChannel(2));
+            //System.out.println(diu.getInputChannel(2));
             safe.CockCheck(controller.getMainRawButton(3), diu.getInputChannel(1));
             safe.ManualMode(controller.getSecondaryRawButton(3), controller.getSecondaryRawButton(2), controller.getSecondaryRawButton(4), controller.getSecondaryRawButton(1), controller.getSecondaryRawButton(5), controller.getSecondaryRawButton(6), controller.getSecondaryRightY());
 
-            if (safe.isManualMode() == false) {
-                pwmOutput.setOutputChannel(7, catapult.getNautilusMotor());
+            if (!safe.isManualMode()) {
+                catapult.shot();
+                loadingArms.loadFront(controller.getMainRightY(), diu.getInputChannel(5), diu.getInputChannel(4), controller.getMainRawButton(1), controller.getMainRawButton(4));
                 pwmOutput.setOutputChannel(6, loadingArms.getIFrontLoadingMotor());
                 pwmOutput.setOutputChannel(5, loadingArms.getIFrontArmMotor());
             } else {
@@ -211,30 +210,11 @@ public class Main extends SimpleRobot {
             pwmOutput.setOutputChannel(3, driveSystem.drive.getOutput(2));
             pwmOutput.setOutputChannel(4, driveSystem.drive.getOutput(2));
 
-            //calibration.PreGameCalibration(true, true, true, true, true);
             Timer.delay(0.01);
-
-            /*if (controller.getSecondaryRawButton(9)) {
-             rotation = 0;
-             }
-
-             if (aiu.getInputChannel(5) < 2.528 || aiu.getInputChannel(5) > 2.568) {
-             rotation = (int) (rotation + (aiu.getInputChannel(5) * 1000 - 2548) / 100);
-             }
-
-             int degree = (int) (rotation / 3.7);*/
-            /*
-             double gyro = aiu.getInputChannel(5);
-             int gyroZeroVoltage = (int) (gyro * 1000 - 2500); 
-             int currentAngle = (int) (gyroZeroVoltage / 3.7);
-             degree += currentAngle;*/
         }
     }
 
     public void test() {
-
-        while(this.isEnabled()) {
-            System.out.println(aiu.getInputChannel(6));
-        }
+        
     }
 }

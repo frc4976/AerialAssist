@@ -1,18 +1,29 @@
 package subsystems;
 
+import main.Main;
+
 public class DriveTrain {
     
     public CustomRobotDrive drive = new CustomRobotDrive();
     
+    public int iGear = 3;
+    
+    private Main main;
+    
     private double dThrottle;
     private int iTrim = 0;
-    public int iGear = 3;
+    private int turning = 0;
     private boolean bGearButtonDown;
     private boolean bTrimButtonDown;
     private boolean bTurnButtonDown;
     public long lastTime = System.currentTimeMillis();
     
-    int turning = 0;
+    
+    
+    public DriveTrain(Main add) {
+        main = add;
+    }
+    
     
     public int[] getFinalDrive() {
         return drive.getFinalDrive();

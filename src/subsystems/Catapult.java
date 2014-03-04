@@ -1,5 +1,7 @@
 package subsystems;
 
+import main.Main;
+
 public class Catapult {
 
     //Buttons
@@ -12,18 +14,34 @@ public class Catapult {
     // SafePWM NautilusMotor = new SafePWM(7);
     int send = 127;
 
-    public void shot(boolean XButton, boolean NautilusTopSen, boolean BButton, boolean NautilusBottomSen) {
+    private Main main;
+    
+    public Catapult(Main add) {
+        main = add;
+    }
+    
+    public void shot() {
+        
+        boolean XButton = main.controller.getMainRawButton(3);
+        boolean NautilusTopSen = !main.diu.getInputChannel(1);
+        //boolean BButton = main.controller.getMainRawButton(2);
+        //boolean NautilusBottomSen = !main.diu.getInputChannel(6);
+        
+        if (main.isAutonomous()) {
+            XButton = true;
+        }
+        
         if (!bSoftShotProcess) {
             if (XButton && !bHardShotProcess) {
                 time = System.currentTimeMillis();
                 thistime = System.currentTimeMillis() - time;
                 bHardShotProcess = true;
-                send = 40;
+                main.pwmOutput.setOutputChannel(7, 40); //send = 40;
                 //bHardShooting = true;
                 bWaiting = true;
             }
             if (bWaiting) {
-                send = 40;
+                main.pwmOutput.setOutputChannel(7, 40); //send = 40;
                 if (NautilusTopSen) {
                     bHardShooting = true;
                     bWaiting = false;
@@ -31,12 +49,12 @@ public class Catapult {
             }
             if (bHardShooting) {
                 if (!NautilusTopSen && thistime >= 700) {
-                    send = 127;
+                    main.pwmOutput.setOutputChannel(7, 127); //send = 127;
                     bHardShooting = false;
                     bHardShotProcess = false;
                 } else {
                     thistime = System.currentTimeMillis() - time;
-                    send = 40;
+                    main.pwmOutput.setOutputChannel(7, 40); //send = 40;
                 }
             }
 
@@ -65,9 +83,5 @@ public class Catapult {
             }
 
         }*/
-    }
-
-    public int getNautilusMotor() {
-        return send;
     }
 }

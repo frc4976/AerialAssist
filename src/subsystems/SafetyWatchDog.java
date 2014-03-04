@@ -6,6 +6,7 @@
 package subsystems;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import main.Main;
 
 /**
  *
@@ -21,6 +22,12 @@ public class SafetyWatchDog {
     int send = 127;
     int Arch = 127;
     int Loading = 127;
+    
+    private Main main;
+    
+    public SafetyWatchDog(Main add) {
+        main = add;
+    }
 
     public void CockCheck(boolean mainXButton, boolean bTopLimitSensor) {
         //System.out.println ("CockCheck Started");
