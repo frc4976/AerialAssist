@@ -115,7 +115,7 @@ public class Main extends SimpleRobot {
                 Timer.delay(dTurningTime);
                 
                 System.out.println("Firing First Ball");
-                catapult.shot(true, !diu.getInputChannel(4), false, true);
+                catapult.shot(true, !diu.getInputChannel(2), false, true);
                 pwmOutput.setOutputChannel(7, catapult.getNautilusMotor());
                 
                 if (catapult.getNautilusMotor() == 127) 
@@ -139,7 +139,7 @@ public class Main extends SimpleRobot {
                 
             } else if (state == 5) {
                 System.out.println("Firing Second Ball");
-                catapult.shot(true, !diu.getInputChannel(4), false, true);
+                catapult.shot(true, !diu.getInputChannel(2), false, true);
                 pwmOutput.setOutputChannel(7, catapult.getNautilusMotor());
                 
                 if (catapult.getNautilusMotor() == 127) 
